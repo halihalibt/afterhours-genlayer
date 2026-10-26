@@ -2,9 +2,9 @@
 
 **Make room for each other.** A shared creative-space atelier where activities, not just time slots, determine whether people can coexist.
 
-[Open the app](https://halihalibt.github.io/afterhours-genlayer/) · [Contract](contracts/afterhours.py) · [Protocol](PROTOCOL.md) · [Try it](DEMO.md)
+[Open the app](https://halihalibt.github.io/afterhours-genlayer/) · [Contract](contracts/afterhours.py) · [Protocol](PROTOCOL.md) · [Try it](DEMO.md) · [Live records](EVIDENCE.md)
 
-![An imagined atelier at golden hour](public/atelier.webp)
+![AFTERHOURS live product preview](media/preview.jpg)
 
 A watercolor artist and an editor wearing headphones can share a room. A silence-dependent recording and an audible rehearsal cannot. AFTERHOURS turns those natural-language conditions into a shared, capacity-limited reservation record.
 
@@ -44,7 +44,7 @@ The deployed address and recorded examples live in [deployment.json](public/depl
 
 These are imagined spaces, not reservations at a real venue. The contract coordinates public participant declarations; it cannot verify actual noise, attendance or physical safety. Natural-language judgments can disagree or remain uncertain. There is no payment, credential verification, administrator override or automatic enforcement. Each owner may submit 64 requests, and each slot admits at most 64 request-history entries before new requests are blocked. Cancellations remain possible.
 
-This project focuses on admission against an evolving shared-capacity ledger. It is not a general negotiation engine, calendar clone or single-prompt answer wrapper. Originality is a product-scope claim, not a claim that no related software exists.
+AFTERHOURS coordinates activities against an evolving capacity ledger. Existing reservations become inputs to the next admission decision.
 
 ## Stack
 
