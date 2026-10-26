@@ -14,7 +14,7 @@ A watercolor artist and an editor wearing headphones can share a room. A silence
 - GenLayer independently evaluates room rules and every active activity; deterministic code allocates capacity only after agreement.
 - A revision guard protects the inspected slot against concurrent changes. Request IDs are namespaced by wallet and idempotent.
 - Exact deployed-source verification, transaction-to-intent binding, finalized execution checks and matching state readback.
-- A watercolor landing page, interactive Three.js atelier, moving light, room transitions, opt-in ambient sound, reduced-motion support and English/Chinese copy.
+- A watercolor landing page, interactive Three.js atelier, moving light, room transitions, gentle piano music (enabled by default, starts when browser playback is permitted), reduced-motion support and English/Chinese copy.
 - Guided examples are explicitly prewritten. The On chain workspace uses real Studionet reads and wallet-signed writes.
 
 ## Run locally
@@ -55,3 +55,5 @@ Vite, vanilla JavaScript, Three.js, genlayer-js 1.1.8 and a Python Intelligent C
 The Pages workflow runs both test suites, builds the app and publishes `dist/` on pushes to `main`. The build uses relative assets for subdirectory hosting. `npm run pages` also creates an optional local static copy in `docs/`.
 
 MIT license. Copyright 2026 HALI.
+
+The original 32-second piano miniature “Light through paper” is rendered by `scripts/render_music.py` and loops with soft room reflections. Music preferences persist locally. Browser autoplay restrictions may require a first click or keypress.
