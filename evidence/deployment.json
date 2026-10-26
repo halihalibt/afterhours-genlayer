@@ -1,0 +1,62 @@
+{
+  "network": 61999,
+  "sourceSha256": "18f1b8cfb29beb4520b36a74391fbac733ce6388f4fc4e552434f2d9c8a66b71",
+  "transaction": {
+    "hash": "0x7c3c040cdfc90c464bba1680e0f28432ebdf246d737f168f20cd69d9b087f5fb",
+    "from_address": "0x5290A5d53445a4a6dBd2922da8DEA623D71cC3b5",
+    "to_address": "0x9Ef4Ec0ca2C1dac274132c0f1Aa8297e6a56Ad5d",
+    "leader_only": false,
+    "execution_mode": "NORMAL",
+    "statusName": "FINALIZED",
+    "result_name": "MAJORITY_AGREE",
+    "last_round": {
+      "round": "0",
+      "leader_index": "0",
+      "votes_committed": "5",
+      "votes_revealed": "5",
+      "appeal_bond": "0",
+      "rotations_left": "3",
+      "result": 6,
+      "round_validators": [
+        "0x4441Ebe37E72c039B73f1D6CF8C6DEe277FE547a",
+        "0xB4EE99165ffe987E64B7b72e45a753309c501eef",
+        "0x4619C8420D50c9dE477DB2CBb7b4863A041688CB",
+        "0x9C182DE7F93AdbE8ee3D62570613eC23c5683cAc",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947"
+      ],
+      "validator_votes_hash": [
+        "0xb7de00843f30a0603e15aeaafb59a222a9e95719319d537b8b25b2cf1b30a318",
+        "0x267fa08b862634d49fb0f81bc6baae1f67048cb8fd1823dab31c7c7f87ed7b74",
+        "0x7195d25b76edfdaec12d59b4bee5ea85413d3c5e2af028bf79e127468fa94dd6",
+        "0x74db806f7b0d8ccc43d1476aed2ce393788453cb0a6af0dbd83eb582e9bed666",
+        "0xa755832331e4e03e04c3d84d8694558601db10be9c6188c2fe02c0342fc01f68"
+      ],
+      "validator_votes": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "validator_votes_name": [
+        "AGREE",
+        "AGREE",
+        "AGREE",
+        "AGREE",
+        "AGREE"
+      ]
+    }
+  },
+  "execution": [
+    {
+      "mode": "leader",
+      "execution_result": "SUCCESS",
+      "result_status": "return"
+    },
+    {
+      "mode": "validator",
+      "execution_result": "SUCCESS",
+      "result_status": "return"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "application": "AFTERHOURS",
+  "network": 61999,
+  "exportedAt": "2026-10-26T00:21:22.433Z",
+  "state": "success",
+  "intent": {
+    "hash": "0x6730cca28998fd2c22f4196589e16031f2b3763d8304232d573b87d20996b5ad",
+    "address": "0x9Ef4Ec0ca2C1dac274132c0f1Aa8297e6a56Ad5d",
+    "owner": "0x5290a5d53445a4a6dbd2922da8dea623d71cc3b5",
+    "method": "reserve",
+    "args": [
+      "watercolor_01",
+      "atelier",
+      "2026-11-02",
+      3,
+      "One person quietly painting with watercolor and pencils. No speakers, power tools, sprays, dust, fumes or flame. I do not require silence and can share the table.",
+      1,
+      0
+    ]
+  },
+  "record": {
+    "against": [],
+    "assessment": {
+      "pairs": [],
+      "rule": {
+        "reason": "Painting with watercolor and pencils, without speakers, power tools, sprays, dust, fumes, or flame, complies with all prohibitions and constraints of the shared art studio.",
+        "status": "COMPATIBLE"
+      }
+    },
+    "cancelled": false,
+    "input": {
+      "activity": "One person quietly painting with watercolor and pencils. No speakers, power tools, sprays, dust, fumes or flame. I do not require silence and can share the table.",
+      "day": "2026-11-02",
+      "expected_revision": 0,
+      "people": 1,
+      "room": "atelier",
+      "slot": 3
+    },
+    "input_hash": "3f4d9b52d8f068bfe49e9504cebb9f4765e6e7ec023a79ce0f77c18919f28025",
+    "key": "0x5290a5d53445a4a6dbd2922da8dea623d71cc3b5:watercolor_01",
+    "outcome": "RESERVED",
+    "owner": "0x5290a5d53445a4a6dbd2922da8dea623d71cc3b5",
+    "protocol": "afterhours-1",
+    "request_id": "watercolor_01",
+    "revision_after": 1,
+    "revision_before": 0,
+    "slot_key": "atelier:2026-11-02:3"
+  },
+  "transaction": {
+    "hash": "0x6730cca28998fd2c22f4196589e16031f2b3763d8304232d573b87d20996b5ad",
+    "from_address": "0x5290A5d53445a4a6dBd2922da8DEA623D71cC3b5",
+    "to_address": "0x9Ef4Ec0ca2C1dac274132c0f1Aa8297e6a56Ad5d",
+    "leader_only": false,
+    "execution_mode": "NORMAL",
+    "statusName": "FINALIZED",
+    "result_name": "MAJORITY_AGREE",
+    "last_round": {
+      "round": "0",
+      "leader_index": "0",
+      "votes_committed": "5",
+      "votes_revealed": "5",
+      "appeal_bond": "0",
+      "rotations_left": "3",
+      "result": 6,
+      "round_validators": [
+        "0x4868b172ddEBC18b5219aaCeAB77ae0Df330c83A",
+        "0x045291B293B9D68969c18B6637A8258038cf787A",
+        "0x0eb3859451817bC25Cc717D4F676D54D0D3aD0aE",
+        "0xcab45E3fe9cC9592B5C378E47734E022b7Df80c9",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947"
+      ],
+      "validator_votes_hash": [
+        "0x457e7c3aafcef3fec7ce57a14b5e3b8e59e3fe72e3adf9bf76332f00f40636a2",
+        "0xc5ab7b7ead173b9ffd24f6a1804db664bf1c02172a359505545f72a15d6419f7",
+        "0x66e9284b8647f59b197614668f3bfa26257ada8049cfecef8dbdadb9d51846a8",
+        "0x5d4f097cc695e38d03f669f4f8df6755b5e7af786ed25ee27fea4da99d96f76f",
+        "0xb9bb02fa1f47bb0ebcc5cdadfdf61747e0a9ffdfc60d8b7ecdb64c4dcbbd6c40"
+      ],
+      "validator_votes": [
+        1,
+        5,
+        1,
+        5,
+        1
+      ],
+      "validator_votes_name": [
+        "AGREE",
+        "IDLE",
+        "AGREE",
+        "IDLE",
+        "AGREE"
+      ]
+    },
+    "execution": [
+      {
+        "mode": "leader",
+        "execution_result": "SUCCESS",
+        "result_status": "return"
+      },
+      {
+        "mode": "validator",
+        "execution_result": "SUCCESS",
+        "result_status": "return"
+      }
+    ]
+  }
+}

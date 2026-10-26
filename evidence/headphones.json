@@ -1,0 +1,115 @@
+{
+  "application": "AFTERHOURS",
+  "network": 61999,
+  "exportedAt": "2026-10-26T00:24:50.303Z",
+  "state": "success",
+  "intent": {
+    "hash": "0xae8c32667fe912700b64f51a8a505d96fce59bbc749d4c41075b8053b3e92ee4",
+    "address": "0x9Ef4Ec0ca2C1dac274132c0f1Aa8297e6a56Ad5d",
+    "owner": "0xdbf947a19d25fc752e07b36b73e89abf5edfd487",
+    "method": "reserve",
+    "args": [
+      "headphones_01",
+      "atelier",
+      "2026-11-02",
+      3,
+      "One person editing photographs on a laptop with closed headphones. No audible sound, conversation, machinery, sprays, dust, fumes or flame. I can share a table and do not need silence.",
+      1,
+      1
+    ]
+  },
+  "record": {
+    "against": [
+      "0x5290a5d53445a4a6dbd2922da8dea623d71cc3b5:watercolor_01"
+    ],
+    "assessment": {
+      "pairs": [
+        {
+          "key": "0x5290a5d53445a4a6dbd2922da8dea623d71cc3b5:watercolor_01",
+          "reason": "The watercolor painter does not require silence and generates no interference; the headphone editor produces no audible sound, movement, dust or fumes, so neither activity disrupts the other in either direction.",
+          "status": "COMPATIBLE"
+        }
+      ],
+      "rule": {
+        "reason": "Headphone-based photo editing produces no audible sound, machinery, fumes, smoke, flame or dust, satisfying every room prohibition and constraint.",
+        "status": "COMPATIBLE"
+      }
+    },
+    "cancelled": false,
+    "input": {
+      "activity": "One person editing photographs on a laptop with closed headphones. No audible sound, conversation, machinery, sprays, dust, fumes or flame. I can share a table and do not need silence.",
+      "day": "2026-11-02",
+      "expected_revision": 1,
+      "people": 1,
+      "room": "atelier",
+      "slot": 3
+    },
+    "input_hash": "3e1b45f73d46adaef929a9bf92ac6c199f94d03fa7dfdd081f1fc876987a25f0",
+    "key": "0xdbf947a19d25fc752e07b36b73e89abf5edfd487:headphones_01",
+    "outcome": "RESERVED",
+    "owner": "0xdbf947a19d25fc752e07b36b73e89abf5edfd487",
+    "protocol": "afterhours-1",
+    "request_id": "headphones_01",
+    "revision_after": 2,
+    "revision_before": 1,
+    "slot_key": "atelier:2026-11-02:3"
+  },
+  "transaction": {
+    "hash": "0xae8c32667fe912700b64f51a8a505d96fce59bbc749d4c41075b8053b3e92ee4",
+    "from_address": "0xdBF947a19D25Fc752e07B36B73e89abf5eDFD487",
+    "to_address": "0x9Ef4Ec0ca2C1dac274132c0f1Aa8297e6a56Ad5d",
+    "leader_only": false,
+    "execution_mode": "NORMAL",
+    "statusName": "FINALIZED",
+    "result_name": "MAJORITY_AGREE",
+    "last_round": {
+      "round": "0",
+      "leader_index": "0",
+      "votes_committed": "5",
+      "votes_revealed": "5",
+      "appeal_bond": "0",
+      "rotations_left": "3",
+      "result": 6,
+      "round_validators": [
+        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8",
+        "0x336458747913FE397be82c4F0926ACeB3ab13618",
+        "0xF7D08d12dB37D3e02D1833b5cB7e56B07F114186",
+        "0xCe0B66448435cA53665C954705Abd753515594Cf",
+        "0xb9ed1258763dfFC83356b15e8A20236B86E42ba2"
+      ],
+      "validator_votes_hash": [
+        "0x01b080f224affca34ab11fbddd1dace3cd4ba3b1a5760005ff4f9521a2ebd672",
+        "0x4efdd634ace3fbd4c1962f5d9c9523487f9bbf326dff4645c41bafe1b22833db",
+        "0x260f3a61b51944669d1fc8fd7ca3181bf7f7efab24ce8a5d5e2bd8179f215a09",
+        "0xe1550ed5897fb135a1cd9f64731b5a6a6202d1d75772f91a0761a1662d5fabcd",
+        "0x0c1e085f7df7b6b051c6358ede7e71b7608b991482d3817a4f90df6088bd5c46"
+      ],
+      "validator_votes": [
+        5,
+        1,
+        5,
+        1,
+        1
+      ],
+      "validator_votes_name": [
+        "IDLE",
+        "AGREE",
+        "IDLE",
+        "AGREE",
+        "AGREE"
+      ]
+    },
+    "execution": [
+      {
+        "mode": "leader",
+        "execution_result": "SUCCESS",
+        "result_status": "return"
+      },
+      {
+        "mode": "validator",
+        "execution_result": "ERROR",
+        "result_status": "contract_error"
+      }
+    ]
+  }
+}

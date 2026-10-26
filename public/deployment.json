@@ -1,0 +1,24 @@
+{
+  "protocol": "afterhours-1",
+  "network": "Stable Studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "address": "0x9Ef4Ec0ca2C1dac274132c0f1Aa8297e6a56Ad5d",
+  "deploymentTransaction": "0x7c3c040cdfc90c464bba1680e0f28432ebdf246d737f168f20cd69d9b087f5fb",
+  "verifiedExamples": [
+    {
+      "owner": "0x5290a5d53445a4a6dbd2922da8dea623d71cc3b5",
+      "requestId": "watercolor_01",
+      "transaction": "0x6730cca28998fd2c22f4196589e16031f2b3763d8304232d573b87d20996b5ad",
+      "outcome": "RESERVED"
+    },
+    {
+      "owner": "0xdbf947a19d25fc752e07b36b73e89abf5edfd487",
+      "requestId": "headphones_01",
+      "transaction": "0xae8c32667fe912700b64f51a8a505d96fce59bbc749d4c41075b8053b3e92ee4",
+      "outcome": "RESERVED"
+    }
+  ],
+  "status": "verified",
+  "sourceSha256": "18f1b8cfb29beb4520b36a74391fbac733ce6388f4fc4e552434f2d9c8a66b71"
+}
