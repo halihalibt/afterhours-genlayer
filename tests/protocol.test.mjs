@@ -22,4 +22,6 @@ test('Studio rollback is never success',()=>assert.equal(executionState({statusN
 test('Studio execution without result remains unverified',()=>assert.equal(executionState({statusName:'FINALIZED',consensus_data:{leader_receipt:[{execution_result:'SUCCESS'}]}}),'pending'));
 
 import {readFileSync} from 'node:fs';
-test('actual Studio deployment binds canonical source and full consensus',()=>{const real=JSON.parse(readFileSync(new URL('./fixtures/studio-deploy.json',import.meta.url)));const source=readFileSync(new URL('../contracts/afterhours.py',import.meta.url),'utf8');assert.doesNotThrow(()=>bindTransaction(real,{owner:real.from_address,method:'deploy',source}));assert.equal(executionState(real),'success');assert.throws(()=>bindTransaction({...real,leader_only:true},{owner:real.from_address,method:'deploy',source}));});
+// The fixture is a v1 Studio deployment; the bundled source is now v2, so it
+// must NOT bind to the current source, while its execution state is unchanged.
+test('actual Studio deployment binds canonical source and full consensus',()=>{const real=JSON.parse(readFileSync(new URL('./fixtures/studio-deploy.json',import.meta.url)));const source=readFileSync(new URL('../contracts/afterhours.py',import.meta.url),'utf8');assert.equal(executionState(real),'success');assert.throws(()=>bindTransaction(real,{owner:real.from_address,method:'deploy',source}));assert.throws(()=>bindTransaction({...real,leader_only:true},{owner:real.from_address,method:'deploy',source}));});

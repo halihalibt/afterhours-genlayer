@@ -17,6 +17,12 @@ A watercolor artist and an editor wearing headphones can share a room. A silence
 - A watercolor landing page, interactive Three.js atelier, moving light, room transitions, gentle piano music (enabled by default, starts when browser playback is permitted), reduced-motion support and English/Chinese copy.
 - Guided examples are explicitly prewritten. The On chain workspace uses real Studionet reads and wallet-signed writes.
 
+## What's new in afterhours-2
+
+A per-slot FIFO waitlist (max 8 entries) for full slots — or for anyone who prefers to queue rather than take an immediate decision. Joining never calls a model; placement is purely positional. New methods: `join_waitlist` (one entry per owner per slot, same validation, idempotency and revision guard as `reserve`), `promote_waitlist` (anyone may call; the head entry runs the same consensus assessment as `reserve` — all-compatible promotes to a reservation, a conflict, uncertainty or lack of capacity defers with the entry staying queued), and `leave_waitlist` (owner-only; later entries advance). `get_slot` shows the queue with live positions, and `get_record` recomputes a queued entry's position.
+
+The v2 contract is deployed at `0x5aa5Bb076D7e1978060196853Ebff8321a234c8b` on Stable Studionet 61999 (protocol `afterhours-2`, source SHA-256 `d297d5f00544b20fe1afd317bb5fb653f46326a998efb42d191bd2900a343bfc`). Live evidence covers a full slot joined and then promoted after a cancellation, a leave advancing the queue, a conflicting amplified rehearsal deferring on promotion, and a prompt-injection activity deferring instead of promoting. See [Live records](EVIDENCE.md).
+
 ## Run locally
 
 Node.js 22+ and Python 3.11+ are recommended.

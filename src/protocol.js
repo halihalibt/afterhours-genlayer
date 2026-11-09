@@ -1,5 +1,11 @@
 import {abi, decodeInputData} from 'genlayer-js';
 export const NETWORK = {id:61999,rpc:'https://studio.genlayer.com/api'};
+export const PROTOCOL = 'afterhours-2';
+// Records written by the v1 contract keep protocol afterhours-1; checkRecord
+// still accepts them so old public records stay readable. New writes and
+// chain.verify() require PROTOCOL (afterhours-2).
+export const PROTOCOLS = ['afterhours-1','afterhours-2'];
+export const MAX_WAITLIST_PER_SLOT = 8;
 export const ROOMS=[{id:'atelier',name:'The Atelier',zh:'光的画室',subtitle:'For hands that make.',zhSub:'让灵感，在光里发生。',capacity:4,color:'#ed926e',rule:'Quiet art, handcraft and headphone work. No amplified sound, machines, fumes or dust.',zhRule:'安静绘画、手工与耳机工作。禁止扩音、机器、烟雾与扬尘。'},{id:'listening',name:'The Listening Room',zh:'听风之间',subtitle:'For ideas worth hearing.',zhSub:'给每一种声音，恰好的空间。',capacity:3,color:'#849ac4',rule:'Acoustic work, voice and headphone editing. Silence-dependent recordings cannot share with audible activity.',zhRule:'原声演奏、人声与耳机剪辑。需要安静的录音，不能与有声活动共处。'},{id:'commons',name:'The Commons',zh:'相遇客厅',subtitle:'For a little togetherness.',zhSub:'偶然相遇，也许就是开始。',capacity:6,color:'#91ab93',rule:'Conversation, small discussions, reading and headphone work. No amplification or machinery.',zhRule:'交谈、小组讨论、阅读与耳机工作。禁止扩音与机器作业。'}];
 export const SLOTS=['09:00–11:00','11:00–13:00','14:00–16:00','16:00–18:00'];
 export function assertDraft({requestId,room,day,slot,activity,people}) {
@@ -53,13 +59,90 @@ export function bindTransaction(tx,intent){
  if(!call||call.method!==intent.method||JSON.stringify(call.args)!==JSON.stringify(intent.args))throw Error('Transaction call does not match the saved request.');
 }
 export function checkRecord(record,intent){
- if(!record||record.protocol!=='afterhours-1'||record.owner!==intent.owner.toLowerCase()||record.request_id!==intent.args[0])throw Error('Record identity does not match.');
+ // Anyone may promote, so for promote_waitlist the head record's owner is
+ // not the caller; identity there is the slot + head snapshot (see below).
+ const ownerMatches=intent.method==='promote_waitlist'||record?.owner===intent.owner.toLowerCase();
+ const idMatches=intent.method==='promote_waitlist'||record?.request_id===intent.args[0];
+ if(!record||!PROTOCOLS.includes(record.protocol)||!ownerMatches||!idMatches)throw Error('Record identity does not match.');
  if(intent.method==='reserve'){
  const [id,room,day,slot,activity,people,revision]=intent.args, p=record.input;
  if(!p||p.room!==room||p.day!==day||p.slot!==slot||p.activity!==activity.trim()||p.people!==people||p.expected_revision!==revision)throw Error('Record input differs from the signed request.');
  if(!['RESERVED','FULL','CONFLICT','UNCERTAIN'].includes(record.outcome))throw Error('Unknown reservation result.');
+ } else if(intent.method==='join_waitlist'){
+ const [id,room,day,slot,activity,people,revision]=intent.args, p=record.input;
+ // v2 join input carries an extra method field; only the request facts are compared.
+ if(!p||p.room!==room||p.day!==day||p.slot!==slot||p.activity!==activity.trim()||p.people!==people||p.expected_revision!==revision)throw Error('Record input differs from the signed request.');
+ if(record.outcome!=='WAITLISTED'||record.waitlist_status!=='QUEUED')throw Error('Waitlist join was not read back as WAITLISTED.');
+ if(!Number.isInteger(record.position)||record.position<1)throw Error('Waitlist position was not read back.');
+ } else if(intent.method==='leave_waitlist'){
+ // leave keeps outcome WAITLISTED; the marker is waitlist_status LEFT.
+ if(record.waitlist_status!=='LEFT'&&record.outcome!=='WAITLIST_LEFT')throw Error('Waitlist leave has not been read back.');
+ } else if(intent.method==='promote_waitlist'){
+ // Anyone may promote, so the head record's owner is NOT the caller.
+ // Identity is the slot in the record input, plus the head snapshot when known.
+ const [room,day,slot]=intent.args, p=record.input;
+ if(!p||p.room!==room||p.day!==day||p.slot!==slot)throw Error('Record does not belong to the promoted slot.');
+ if(intent.before?.head?.request_id&&record.request_id!==intent.before.head.request_id)throw Error('Record is not the promoted head entry.');
+ const promoted=record.outcome==='RESERVED'&&record.waitlist_status==='PROMOTED';
+ const deferred=record.outcome==='WAITLISTED'&&record.waitlist_status==='QUEUED'&&Number.isInteger(record.deferral_count)&&record.deferral_count>0&&!!record.last_deferral;
+ if(!promoted&&!deferred)throw Error('Promotion outcome was not read back.');
  } else if(intent.method==='cancel'&&!record.cancelled)throw Error('Cancellation has not been read back.');
+ else if(!['reserve','join_waitlist','leave_waitlist','promote_waitlist','cancel'].includes(intent.method))throw Error('Unsupported record method.');
  return record;
+}
+// Waitlist queue from a FINALIZED get_slot readback. Entries arrive in FIFO
+// order with a 1-based position; a missing waitlist is an empty queue, never
+// an invented position. Returns [] when nothing was read back.
+export function waitlistEntries(slot){
+ const raw=slot?.waitlist;
+ if(!Array.isArray(raw))return [];
+ return raw.map((e,i)=>{
+  if(typeof e==='string')return {key:e,owner:null,request_id:e,activity:'',people:null,joined_revision:null,deferrals:0,position:i+1};
+  const key=e.key||'';
+  return {key,owner:e.owner||null,request_id:e.request_id||(key.includes(':')?key.slice(key.indexOf(':')+1):null),activity:e.activity||'',people:typeof e.people==='number'?e.people:null,joined_revision:e.joined_revision??null,deferrals:e.deferrals??e.deferral_count??0,position:Number.isInteger(e.position)&&e.position>=1?e.position:i+1};
+ });
+}
+// 1-based position from a FINALIZED get_record readback, or null when the
+// contract did not return one. Callers must show no position, never a guess.
+export function waitlistPosition(record){
+ return Number.isInteger(record?.position)&&record.position>=1?record.position:null;
+}
+export function waitlistStatus(record){return record?.waitlist_status||null;}
+export function slotIsFull(slot,people){
+ if(!slot||typeof slot.capacity!=='number')return false;
+ const occupied=typeof slot.occupied==='number'?slot.occupied:(Array.isArray(slot.active)?slot.active.reduce((n,b)=>n+(b.people||0),0):0);
+ return occupied+people>slot.capacity;
+}
+// Verify a promote_waitlist outcome from FINALIZED readbacks only.
+// slot: get_slot readback for the promoted slot. headRecord: get_record
+// readback for the head entry (null when unknown, e.g. an inspected tx
+// without a pre-send snapshot). intent.before: the pre-send slot snapshot
+// {revision, occupied, waitlist, head} captured before signing, or null.
+// Returns 'PROMOTED', 'PROMOTION_DEFERRED' or 'WAITLIST_EMPTY'; throws
+// when the readback does not prove any of them, so the UI never shows a
+// success it did not read back.
+export function checkPromotion(slot,intent,headRecord){
+ const [room,day,slotIndex]=intent.args, before=intent.before||null;
+ if(!slot||slot.room!==room||slot.day!==day||slot.slot!==slotIndex)throw Error('Slot readback does not match the promotion request.');
+ const entries=waitlistEntries(slot);
+ if(before&&(!before.waitlist||before.waitlist.length===0)&&slot.revision===before.revision&&entries.length===0)return 'WAITLIST_EMPTY';
+ if(headRecord){
+  const p=headRecord.input;
+  if(!p||p.room!==room||p.day!==day||p.slot!==slotIndex)throw Error('Head record does not belong to the promoted slot.');
+  if(before?.head?.request_id&&headRecord.request_id!==before.head.request_id)throw Error('Head record is not the promoted head entry.');
+  if(before&&typeof before.revision==='number'&&slot.revision<=before.revision)throw Error('Slot revision did not advance after promotion.');
+  if(headRecord.outcome==='RESERVED'&&headRecord.waitlist_status==='PROMOTED')return 'PROMOTED';
+  const beforeDeferrals=before?.head?.deferrals??0;
+  if(headRecord.outcome==='WAITLISTED'&&headRecord.waitlist_status==='QUEUED'&&Number.isInteger(headRecord.deferral_count)&&headRecord.deferral_count>beforeDeferrals&&!!headRecord.last_deferral)return 'PROMOTION_DEFERRED';
+  throw Error('Head record does not show a promotion outcome.');
+ }
+ // No head record: only the slot history can speak, and only for the head
+ // snapshot when one exists.
+ const events=[...(slot.history||[])].filter(h=>!before?.head?.key||h.key===before.head.key);
+ const last=events.at(-1);
+ if(last?.event==='PROMOTED')return 'PROMOTED';
+ if(last?.event==='PROMOTION_DEFERRED')return 'PROMOTION_DEFERRED';
+ throw Error('Promotion could not be verified from the finalized readback.');
 }
 export const demoScenarios={
  harmony:{title:'Watercolor & quiet editing',zh:'水彩 × 安静剪辑',label:'COMPATIBLE',zhLabel:'可以共处',occupied:2,activities:[{name:'Watercolor studies',zh:'水彩习作',color:'#ed926e'},{name:'Editing with headphones',zh:'戴耳机剪辑',color:'#8799c6'}],reason:'Both activities are quiet and produce no disruptive sound. Two people share the room, with two places still open.',zhReason:'两项活动都保持安静，不产生干扰声音。两个人共享空间，仍有两个空位。'},

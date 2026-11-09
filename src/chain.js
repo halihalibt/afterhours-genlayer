@@ -2,7 +2,7 @@ import {createClient} from 'genlayer-js';
 import {studionet} from 'genlayer-js/chains';
 import {TransactionHashVariant} from 'genlayer-js/types';
 import source from '../contracts/afterhours.py?raw';
-import {NETWORK,plain,executionState,bindTransaction,checkRecord,normalizeTransaction} from './protocol.js';
+import {NETWORK,PROTOCOL,plain,executionState,bindTransaction,checkRecord,checkPromotion,normalizeTransaction} from './protocol.js';
 export const canonicalSource=source;
 const pendingKey='afterhours.pending.v1';
 const completedKey='afterhours.completed.v1';
@@ -35,18 +35,18 @@ export async function verify(address){
  await preflight();
  const code=await readClient.getContractCode(address);if(code!==source)throw Error('Deployed source is not the bundled AFTERHOURS contract.');
  const p=JSON.parse(await readClient.readContract({address,functionName:'get_protocol',args:[],transactionHashVariant:TransactionHashVariant.LATEST_FINAL}));
- if(p.protocol!=='afterhours-1')throw Error('Unexpected protocol.');
+ if(p.protocol!==PROTOCOL)throw Error(`Unexpected protocol. Expected ${PROTOCOL}.`);
  verifiedAddress=address.toLowerCase();return p;
 }
 export async function readSlot(address,room,day,slot){if(address.toLowerCase()!==verifiedAddress)await verify(address);return JSON.parse(await readClient.readContract({address,functionName:'get_slot',args:[room,day,slot],transactionHashVariant:TransactionHashVariant.LATEST_FINAL}));}
 export async function readRecord(address,owner,id){if(address.toLowerCase()!==verifiedAddress)await verify(address);const r=await readClient.readContract({address,functionName:'get_record',args:[owner,id],transactionHashVariant:TransactionHashVariant.LATEST_FINAL});return r?JSON.parse(r):null;}
-export async function send(address,method,args){
+export async function send(address,method,args,extra={}){
  if(pending())throw Error('Track the saved transaction before sending another one.');
  if(!signer||!wallet)throw Error('Connect your wallet first.');
  const selected=await provider.request({method:'eth_accounts'});const id=await provider.request({method:'eth_chainId'});
  if(selected[0]?.toLowerCase()!==wallet.toLowerCase()||Number(id)!==NETWORK.id)throw Error('Wallet changed. Reconnect before signing.');
  await preflight();if(method!=='deploy'&&verifiedAddress!==address.toLowerCase())await verify(address);
- const intent={address,method,args,owner:wallet.toLowerCase(),createdAt:new Date().toISOString(),hash:null,...(method==='deploy'?{source}:{} )};
+ const intent={address,method,args,owner:wallet.toLowerCase(),createdAt:new Date().toISOString(),hash:null,...extra,...(method==='deploy'?{source}:{} )};
  persist(intent);
  try{
  const hash=method==='deploy'?await signer.deployContract({code:source,args:[],leaderOnly:false,consensusMaxRotations:3}):await signer.writeContract({address,functionName:method,args,value:0n,leaderOnly:false,consensusMaxRotations:3});
@@ -63,6 +63,15 @@ export async function track(){
  if(p.method==='deploy'){
  const address=tx.to_address||tx.recipient||tx.txDataDecoded?.contractAddress;if(!address)throw Error('Finalized deployment has no contract address.');await verify(address);const result={state,tx,intent:p,address};finish(result);return result;
  }
+ if(p.method==='promote_waitlist'){
+ // A promotion has no caller-owned record: verify it from FINALIZED
+ // readbacks of the slot and the head entry (from the pre-send snapshot).
+ const slot=await readSlot(p.address,p.args[0],p.args[1],p.args[2]);
+ const head=p.before?.head;
+ const headRecord=head?await readRecord(p.address,head.owner,head.request_id):null;
+ const promotion=checkPromotion(slot,p,headRecord);
+ const result={state,tx,intent:p,slot,record:headRecord,promotion};finish(result);return result;
+ }
  const record=checkRecord(await readRecord(p.address,p.owner,p.args[0]),p);
  const result={state,tx,intent:p,record};finish(result);return result;
 }
@@ -75,11 +84,24 @@ export async function inspect(hash,address){
  const target=tx.to_address||tx.recipient||d.contractAddress;
  if(d.type==='call'&&(!address||target?.toLowerCase()!==address.toLowerCase()))throw Error('Transaction targets another contract.');
  const intent={hash,address:target,owner:(tx.from_address||tx.sender||tx.from||'').toLowerCase(),method:d.type==='deploy'?'deploy':call?.method,args:d.type==='deploy'?[]:call?.args,...(d.type==='deploy'?{source}:{})};
- if(!['deploy','reserve','cancel'].includes(intent.method))throw Error('Unsupported contract method.');
+ if(!['deploy','reserve','cancel','join_waitlist','promote_waitlist','leave_waitlist'].includes(intent.method))throw Error('Unsupported contract method.');
  try{bindTransaction(tx,intent)}catch(e){return {state:'unverified',verificationError:e.message,tx,intent}}const state=executionState(tx);
  if(state!=='success')return {state,tx,intent};
  await verify(target);
  if(intent.method==='deploy')return {state,tx,intent,address:target};
+ if(intent.method==='promote_waitlist'){
+ // No caller-owned record: recover the head from the slot history's last
+ // promotion event and verify the slot + head record readbacks. A
+ // WAITLIST_EMPTY promotion leaves no trace, so an inspected empty
+ // promotion cannot be distinguished from an older promotion event; the
+ // live track() path with its pre-send snapshot is exact.
+ const slot=await readSlot(target,intent.args[0],intent.args[1],intent.args[2]);
+ const ev=[...(slot.history||[])].reverse().find(h=>['PROMOTED','PROMOTION_DEFERRED'].includes(h.event));
+ let headRecord=null;const before=ev?{head:{key:ev.key,owner:ev.key.slice(0,42),request_id:ev.key.slice(43)}}:null;
+ if(ev)headRecord=await readRecord(target,before.head.owner,before.head.request_id);
+ const promotion=checkPromotion(slot,{...intent,before},headRecord);
+ return {state,tx,intent,slot,record:headRecord,promotion};
+ }
  return {state,tx,intent,record:checkRecord(await readRecord(target,intent.owner,intent.args[0]),intent)};
 }
 export function download(value,name){const blob=new Blob([JSON.stringify(plain(value),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}

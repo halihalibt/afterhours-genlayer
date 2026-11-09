@@ -14,6 +14,13 @@ Select **On chain → Network, contract & public record → Read finalized examp
 4. Check the saved transaction until finality. Successful execution and matching state readback are required. A `CONFLICT`, `UNCERTAIN` or `FULL` decision does not consume capacity.
 5. Use Cancel on your active reservation to release it. Follow that transaction through finality as well.
 
+## Join the waitlist
+
+1. Read the latest slot. When it is full for your party, Reserve is disabled and **Join waitlist** is offered instead. Joining uses the same request form and revision; one entry per wallet per slot, at most 8 per slot.
+2. Check the saved transaction until finality. The read-back record shows `WAITLISTED` with your `POSITION` in the queue. A waitlisted wallet cannot also hold an active reservation on the same slot.
+3. Anyone can press **Promote head** on a slot with a queue. Promotion re-checks capacity and compatibility for the head entry only: success turns it into a reservation (`PROMOTED`), otherwise the head stays queued and the record counts one more deferral (`PROMOTION_DEFERRED`). An empty queue promotes nothing (`WAITLIST_EMPTY`).
+4. Use **Leave** on your own queue entry to give up your place. The record then shows `WAITLIST_LEFT` and the queue closes up behind you. Positions are always read back from the finalized slot state, never assumed.
+
 If the network or wallet interrupts submission, retain the request and recover the exact hash from wallet activity. Do not re-send an uncertain request. After a stale-revision rejection, read the slot again and use a fresh request ID only after confirming the prior transaction failed.
 
 ## Studio deployment
