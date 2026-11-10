@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {assertDraft,executionState,bindTransaction,checkRecord,plain} from '../src/protocol.js';
+import {assertDraft,executionState,bindTransaction,checkRecord,plain,exportableResult} from '../src/protocol.js';
 const owner='0x'+'a'.repeat(40),address='0x'+'b'.repeat(40);
 const args=['visit_1','atelier','2026-10-26',3,'Quiet watercolor painting with no speakers.',1,0];
 const intent={owner,address,method:'reserve',args};
@@ -17,6 +17,7 @@ test('reject altered arguments',()=>assert.throws(()=>bindTransaction(tx,{...int
 test('readback must match request facts',()=>{const r={protocol:'afterhours-1',owner,request_id:'visit_1',outcome:'RESERVED',input:{room:'atelier',day:'2026-10-26',slot:3,activity:args[4],people:1,expected_revision:0}};assert.equal(checkRecord(r,intent),r);assert.throws(()=>checkRecord({...r,input:{...r.input,people:3}},intent));});
 test('cancel cannot be declared complete without cancelled state',()=>assert.throws(()=>checkRecord({protocol:'afterhours-1',owner,request_id:'visit_1',cancelled:false},{...intent,method:'cancel'})));
 test('map/bigint normalize without losing named arguments',()=>assert.deepEqual(plain(new Map([['args',[1n,'x']]])),{args:[1,'x']}));
+test('export needs a finalized readback',()=>{assert.equal(exportableResult(null,[]),null);assert.equal(exportableResult({state:'pending',record:{}},[]),null);assert.equal(exportableResult({state:'failed',record:{}},[]),null);assert.equal(exportableResult({state:'success'},[]),null);assert.equal(exportableResult({state:'success',record:{outcome:'RESERVED'}},[]).state,'success');assert.equal(exportableResult(null,[{state:'public-read',record:{outcome:'RESERVED'}}]).state,'public-read');assert.equal(exportableResult({state:'success',slot:{occupied:2}},[{state:'success',record:{}}]).slot.occupied,2);});
 
 test('Studio rollback is never success',()=>assert.equal(executionState({statusName:'FINALIZED',consensus_data:{leader_receipt:[{execution_result:'SUCCESS',result:{status:'rollback'}}]}}),'failed'));
 test('Studio execution without result remains unverified',()=>assert.equal(executionState({statusName:'FINALIZED',consensus_data:{leader_receipt:[{execution_result:'SUCCESS'}]}}),'pending'));

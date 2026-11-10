@@ -90,6 +90,12 @@ export function checkRecord(record,intent){
  else if(!['reserve','join_waitlist','leave_waitlist','promote_waitlist','cancel'].includes(intent.method))throw Error('Unsupported record method.');
  return record;
 }
+// First exportable result from a FINALIZED readback, or null. The export
+// button and its handler share this predicate, so the button is disabled
+// until a finalized record exists and can never export unverified data.
+export function exportableResult(lastResult, history){
+ return [lastResult,...(history||[])].find(x=>x&&(x.state==='success'||x.state==='public-read')&&(x.record||x.slot))||null;
+}
 // Waitlist queue from a FINALIZED get_slot readback. Entries arrive in FIFO
 // order with a 1-based position; a missing waitlist is an empty queue, never
 // an invented position. Returns [] when nothing was read back.

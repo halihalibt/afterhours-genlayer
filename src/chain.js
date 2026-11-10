@@ -1,4 +1,5 @@
 import {createClient} from 'genlayer-js';
+import {getAddress} from 'viem';
 import {studionet} from 'genlayer-js/chains';
 import {TransactionHashVariant} from 'genlayer-js/types';
 import source from '../contracts/afterhours.py?raw';
@@ -9,6 +10,14 @@ const completedKey='afterhours.completed.v1';
 let memoryPending, provider, wallet, signer, verifiedAddress='';
 const invalidate=()=>{wallet='';signer=null;window.dispatchEvent(new CustomEvent('wallet-invalidated'))};
 export const readClient=createClient({chain:studionet});
+// Studionet's getContractCode lookup is case-sensitive: a lowercase address
+// fails with "Contract not found" even though the contract exists. Normalize
+// every user-supplied address to its EIP-55 checksummed form before any RPC
+// call, so a pasted lowercase address verifies instead of erroring.
+export function canonicalAddress(address){
+ try{return getAddress(address);}
+ catch{throw Error('Enter a valid 0x contract address.');}
+}
 const serial=v=>JSON.stringify(plain(v));
 function load(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
 export function pending(){return memoryPending||load(pendingKey)}
@@ -31,6 +40,7 @@ export async function connect(){
  return wallet;
 }
 export async function verify(address){
+ address=canonicalAddress(address);
  if(!/^0x[a-fA-F0-9]{40}$/.test(address))throw Error('Enter the deployed contract address.');
  await preflight();
  const code=await readClient.getContractCode(address);if(code!==source)throw Error('Deployed source is not the bundled AFTERHOURS contract.');
@@ -38,9 +48,10 @@ export async function verify(address){
  if(p.protocol!==PROTOCOL)throw Error(`Unexpected protocol. Expected ${PROTOCOL}.`);
  verifiedAddress=address.toLowerCase();return p;
 }
-export async function readSlot(address,room,day,slot){if(address.toLowerCase()!==verifiedAddress)await verify(address);return JSON.parse(await readClient.readContract({address,functionName:'get_slot',args:[room,day,slot],transactionHashVariant:TransactionHashVariant.LATEST_FINAL}));}
-export async function readRecord(address,owner,id){if(address.toLowerCase()!==verifiedAddress)await verify(address);const r=await readClient.readContract({address,functionName:'get_record',args:[owner,id],transactionHashVariant:TransactionHashVariant.LATEST_FINAL});return r?JSON.parse(r):null;}
+export async function readSlot(address,room,day,slot){address=canonicalAddress(address);if(address.toLowerCase()!==verifiedAddress)await verify(address);return JSON.parse(await readClient.readContract({address,functionName:'get_slot',args:[room,day,slot],transactionHashVariant:TransactionHashVariant.LATEST_FINAL}));}
+export async function readRecord(address,owner,id){address=canonicalAddress(address);if(address.toLowerCase()!==verifiedAddress)await verify(address);const r=await readClient.readContract({address,functionName:'get_record',args:[owner,id],transactionHashVariant:TransactionHashVariant.LATEST_FINAL});return r?JSON.parse(r):null;}
 export async function send(address,method,args,extra={}){
+ if(method!=='deploy')address=canonicalAddress(address);
  if(pending())throw Error('Track the saved transaction before sending another one.');
  if(!signer||!wallet)throw Error('Connect your wallet first.');
  const selected=await provider.request({method:'eth_accounts'});const id=await provider.request({method:'eth_chainId'});
