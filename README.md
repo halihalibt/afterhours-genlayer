@@ -60,6 +60,6 @@ Vite, vanilla JavaScript, Three.js, genlayer-js 1.1.8 and a Python Intelligent C
 
 The Pages workflow runs both test suites, builds the app and publishes `dist/` on pushes to `main`. The build uses relative assets for subdirectory hosting. `npm run pages` also creates an optional local static copy in `docs/`.
 
-MIT license. Copyright 2026 HALI.
+MIT license. Copyright 2026 halihalibt.
 
 The original 32-second piano miniature “Light through paper” is rendered by `scripts/render_music.py` and loops with soft room reflections. Music preferences persist locally. Browser autoplay restrictions may require a first click or keypress.
